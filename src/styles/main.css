@@ -10,3 +10,28 @@ body {
 h1 {
   color: var(--primary-color);
 }
+ul {
+  list-style-type: none; /* Removes the default bullet points */
+}
+
+.card{background:var(--card);border-radius:12px;padding:20px;width:760px;box-shadow:0 6px 20px rgba(16,24,40,0.06)}
+/* Tree styles */
+    .tree{padding-left:8px}
+    .tree-node .node {
+      display: flex;
+      align-items: center;
+    }
+    .tree ul{list-style:none;margin:0;padding-left:18px;border-left:1px dashed rgba(15,23,42,0.06)}
+    .tree li{position:relative;padding:6px 6px 6px 10px;display:flex;align-items:center;gap:8px}
+
+    .caret{
+      display:inline-grid;place-items:center;cursor:pointer;flex:0 0 14px;border-radius:3px
+    }
+    .caret::before{content:'▸';display:block;transform-origin:50% 50%;transition:transform .15s ease;color:var(--muted)}
+    .node[aria-expanded="true"] > .caret::before{transform:rotate(90deg)}
+
+    .label{padding:6px 8px;border-radius:8px;cursor:pointer}
+    .label:hover{background:rgba(37,99,235,0.06)}
+    .meta{font-size:12px;color:var(--muted);margin-left:auto}
+
+    .hidden{display:none}
