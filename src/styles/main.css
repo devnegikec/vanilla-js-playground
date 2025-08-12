@@ -1,0 +1,12 @@
+:root {
+  --primary-color: #3498db;
+}
+
+body {
+  font-family: sans-serif;
+  line-height: 1.6;
+}
+
+h1 {
+  color: var(--primary-color);
+}
