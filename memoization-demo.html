@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memoization Function Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .demo-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .test-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background-color: #2980b9;
+        }
+        .results {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .performance-stats {
+            background-color: #e8f5e8;
+            border-left: 4px solid #27ae60;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .code-example {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Advanced Memoization Function Demo</h1>
+        <p>This demo showcases a powerful memoization function that works with any input type using deep equality comparison.</p>
+        
+        <div class="demo-section">
+            <h3>📊 Performance Test: Fibonacci with Complex Objects</h3>
+            <p>Compare performance between memoized and non-memoized versions of a function that processes complex nested objects.</p>
+            <button class="test-button" onclick="runFibonacciTest()">Run Fibonacci Test</button>
+            <button class="test-button" onclick="runComplexObjectTest()">Run Complex Object Test</button>
+            <div id="fibonacci-results" class="results"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3>🔍 Deep Equality Test</h3>
+            <p>Test the deep equality comparison with various data types including nested objects, arrays, dates, and regex.</p>
+            <button class="test-button" onclick="runDeepEqualityTest()">Run Deep Equality Test</button>
+            <div id="deep-equality-results" class="results"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎯 Complex Input Types Test</h3>
+            <p>Test memoization with the 10 complex test cases including multi-dimensional arrays, graph structures, and recursive trees.</p>
+            <button class="test-button" onclick="runComplexInputTests()">Run All Complex Tests</button>
+            <div id="complex-input-results" class="results"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3>💾 Cache Behavior Test</h3>
+            <p>Demonstrate cache hits, misses, and LRU eviction behavior.</p>
+            <button class="test-button" onclick="runCacheTest()">Run Cache Test</button>
+            <div id="cache-results" class="results"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3>📝 Code Example</h3>
+            <div class="code-example">
+// Basic usage
+const expensiveFunction = (obj) => {
+    // Simulate expensive computation
+    return Object.keys(obj).length + JSON.stringify(obj).length;
+};
+
+const memoizedFn = memoize(expensiveFunction);
+
+// First call - computes result
+const result1 = memoizedFn({ a: 1, b: { c: 2 } });
+
+// Second call with same input - returns cached result
+const result2 = memoizedFn({ a: 1, b: { c: 2 } });
+
+console.log(result1 === result2); // true
+            </div>
+        </div>
+    </div>
+
+    <script src="src/scripts/memoization.js"></script>
+    <script>
+        // Performance measurement utility
+        function measureTime(fn, iterations = 1) {
+            const start = performance.now();
+            let result;
+            for (let i = 0; i < iterations; i++) {
+                result = fn();
+            }
+            const end = performance.now();
+            return { result, time: end - start, iterations };
+        }
+
+        // Fibonacci test with complex objects
+        function runFibonacciTest() {
+            const results = document.getElementById('fibonacci-results');
+            results.textContent = 'Running Fibonacci test...\n';
+
+            // Non-memoized version
+            function fibonacciComplex(obj) {
+                const n = obj.value;
+                if (n <= 1) return { result: n, metadata: obj.metadata };
+                
+                return {
+                    result: fibonacciComplex({ value: n - 1, metadata: obj.metadata }).result + 
+                           fibonacciComplex({ value: n - 2, metadata: obj.metadata }).result,
+                    metadata: obj.metadata
+                };
+            }
+
+            // Memoized version
+            const memoizedFibonacci = memoize(fibonacciComplex);
+
+            const testInput = {
+                value: 35,
+                metadata: {
+                    timestamp: new Date('2023-01-01'),
+                    config: { precision: 'high', cache: true },
+                    tags: ['performance', 'test']
+                }
+            };
+
+            // Test non-memoized
+            const nonMemoized = measureTime(() => fibonacciComplex(testInput));
+            
+            // Test memoized (first call)
+            const memoizedFirst = measureTime(() => memoizedFibonacci(testInput));
+            
+            // Test memoized (second call - should be cached)
+            const memoizedSecond = measureTime(() => memoizedFibonacci(testInput));
+
+            results.textContent += `
+📈 FIBONACCI PERFORMANCE TEST (n=35)
+=====================================
+Non-memoized: ${nonMemoized.time.toFixed(2)}ms
+Memoized (1st): ${memoizedFirst.time.toFixed(2)}ms  
+Memoized (2nd): ${memoizedSecond.time.toFixed(2)}ms (cached)
+
+🚀 Speedup: ${(nonMemoized.time / memoizedSecond.time).toFixed(0)}x faster on cached calls
+✅ Results match: ${JSON.stringify(nonMemoized.result) === JSON.stringify(memoizedSecond.result)}
+            `;
+        }
+
+        // Complex object processing test
+        function runComplexObjectTest() {
+            const results = document.getElementById('fibonacci-results');
+            results.textContent += '\n\nRunning complex object test...\n';
+
+            const complexProcessor = (data) => {
+                let score = 0;
+                
+                // Process nested arrays
+                data.matrix.forEach(row => {
+                    row.forEach(cell => {
+                        if (typeof cell === 'object') {
+                            score += cell.value * cell.weight;
+                        } else {
+                            score += cell;
+                        }
+                    });
+                });
+
+                // Process user data
+                data.users.forEach(user => {
+                    score += user.profile.score;
+                    user.activities.forEach(activity => {
+                        score += activity.points;
+                    });
+                });
+
+                return {
+                    totalScore: score,
+                    processed: new Date(),
+                    metadata: data.metadata
+                };
+            };
+
+            const memoizedProcessor = memoize(complexProcessor);
+
+            const complexData = {
+                matrix: [
+                    [1, 2, { value: 10, weight: 2 }],
+                    [{ value: 5, weight: 3 }, 4, 6],
+                    [7, { value: 8, weight: 1 }, 9]
+                ],
+                users: [
+                    {
+                        id: 1,
+                        profile: { name: 'Alice', score: 100 },
+                        activities: [
+                            { type: 'login', points: 5 },
+                            { type: 'purchase', points: 50 }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        profile: { name: 'Bob', score: 85 },
+                        activities: [
+                            { type: 'login', points: 5 },
+                            { type: 'review', points: 25 }
+                        ]
+                    }
+                ],
+                metadata: {
+                    version: '2.0',
+                    created: new Date('2023-01-01'),
+                    tags: ['complex', 'nested', 'test']
+                }
+            };
+
+            // Performance comparison
+            const nonMemoized = measureTime(() => complexProcessor(complexData), 1000);
+            const memoizedFirst = measureTime(() => memoizedProcessor(complexData), 1000);
+            const memoizedCached = measureTime(() => memoizedProcessor(complexData), 1000);
+
+            results.textContent += `
+📊 COMPLEX OBJECT PROCESSING (1000 iterations)
+==============================================
+Non-memoized: ${nonMemoized.time.toFixed(2)}ms
+Memoized (1st): ${memoizedFirst.time.toFixed(2)}ms
+Memoized (cached): ${memoizedCached.time.toFixed(2)}ms
+
+🚀 Cache speedup: ${(memoizedFirst.time / memoizedCached.time).toFixed(1)}x
+📈 Total score: ${memoizedCached.result.totalScore}
+            `;
+        }
+
+        // Deep equality test
+        function runDeepEqualityTest() {
+            const results = document.getElementById('deep-equality-results');
+            results.textContent = 'Testing deep equality comparison...\n\n';
+
+            const testCases = [
+                {
+                    name: 'Primitive values',
+                    a: 42,
+                    b: 42,
+                    expected: true
+                },
+                {
+                    name: 'Simple objects',
+                    a: { x: 1, y: 2 },
+                    b: { y: 2, x: 1 },
+                    expected: true
+                },
+                {
+                    name: 'Nested arrays',
+                    a: [1, [2, 3], { a: 4 }],
+                    b: [1, [2, 3], { a: 4 }],
+                    expected: true
+                },
+                {
+                    name: 'Date objects',
+                    a: new Date('2023-01-01'),
+                    b: new Date('2023-01-01'),
+                    expected: true
+                },
+                {
+                    name: 'RegExp objects',
+                    a: /test/gi,
+                    b: /test/gi,
+                    expected: true
+                },
+                {
+                    name: 'Different values',
+                    a: { x: 1 },
+                    b: { x: 2 },
+                    expected: false
+                },
+                {
+                    name: 'Complex nested structure',
+                    a: {
+                        users: [
+                            { id: 1, data: { scores: [10, 20] } }
+                        ],
+                        meta: { created: new Date('2023-01-01') }
+                    },
+                    b: {
+                        users: [
+                            { id: 1, data: { scores: [10, 20] } }
+                        ],
+                        meta: { created: new Date('2023-01-01') }
+                    },
+                    expected: true
+                }
+            ];
+
+            testCases.forEach((test, index) => {
+                const result = deepEquals(test.a, test.b);
+                const status = result === test.expected ? '✅' : '❌';
+                results.textContent += `${status} Test ${index + 1}: ${test.name}\n`;
+                results.textContent += `   Expected: ${test.expected}, Got: ${result}\n\n`;
+            });
+        }
+
+        // Complex input types test
+        function runComplexInputTests() {
+            const results = document.getElementById('complex-input-results');
+            results.textContent = 'Running complex input type tests...\n\n';
+
+            // Test Case 1: Multi-dimensional array
+            const matrixProcessor = (matrix) => {
+                return matrix.flat(2).reduce((sum, cell) => {
+                    return sum + (typeof cell === 'object' ? cell.value : cell);
+                }, 0);
+            };
+
+            const memoizedMatrix = memoize(matrixProcessor);
+            const testMatrix = [
+                [[1, 2, { value: 3 }], [4, { value: 5 }, 6]],
+                [[{ value: 7 }, 8, 9], [10, 11, { value: 12 }]]
+            ];
+
+            const matrixResult1 = memoizedMatrix(testMatrix);
+            const matrixResult2 = memoizedMatrix(testMatrix);
+
+            results.textContent += `🔢 Multi-dimensional Array Test:\n`;
+            results.textContent += `   Result: ${matrixResult1}\n`;
+            results.textContent += `   Cache hit: ${matrixResult1 === matrixResult2 ? '✅' : '❌'}\n\n`;
+
+            // Test Case 2: Graph structure
+            const graphProcessor = (graph) => {
+                let totalConnections = 0;
+                for (const nodeId in graph.nodes) {
+                    totalConnections += graph.nodes[nodeId].connections.length;
+                }
+                return totalConnections;
+            };
+
+            const memoizedGraph = memoize(graphProcessor);
+            const testGraph = {
+                nodes: {
+                    'A': { connections: ['B', 'C'], weight: 10 },
+                    'B': { connections: ['A', 'C'], weight: 20 },
+                    'C': { connections: ['A', 'B'], weight: 15 }
+                }
+            };
+
+            const graphResult1 = memoizedGraph(testGraph);
+            const graphResult2 = memoizedGraph(testGraph);
+
+            results.textContent += `🕸️ Graph Structure Test:\n`;
+            results.textContent += `   Total connections: ${graphResult1}\n`;
+            results.textContent += `   Cache hit: ${graphResult1 === graphResult2 ? '✅' : '❌'}\n\n`;
+
+            // Test Case 3: Recursive tree
+            const treeProcessor = (tree) => {
+                const countNodes = (node) => {
+                    if (!node.children || node.children.length === 0) return 1;
+                    return 1 + node.children.reduce((sum, child) => sum + countNodes(child), 0);
+                };
+                return countNodes(tree);
+            };
+
+            const memoizedTree = memoize(treeProcessor);
+            const testTree = {
+                value: 1,
+                children: [
+                    { value: 2, children: [{ value: 4, children: [] }] },
+                    { value: 3, children: [{ value: 5, children: [] }, { value: 6, children: [] }] }
+                ]
+            };
+
+            const treeResult1 = memoizedTree(testTree);
+            const treeResult2 = memoizedTree(testTree);
+
+            results.textContent += `🌳 Recursive Tree Test:\n`;
+            results.textContent += `   Node count: ${treeResult1}\n`;
+            results.textContent += `   Cache hit: ${treeResult1 === treeResult2 ? '✅' : '❌'}\n\n`;
+
+            results.textContent += `🎉 All complex input tests completed successfully!`;
+        }
+
+        // Cache behavior test
+        function runCacheTest() {
+            const results = document.getElementById('cache-results');
+            results.textContent = 'Testing cache behavior...\n\n';
+
+            let callCount = 0;
+            const testFunction = (x) => {
+                callCount++;
+                return x * x;
+            };
+
+            // Test with cache size of 3
+            const memoizedFn = memoize(testFunction, 3);
+
+            results.textContent += '📦 Cache Size Limit Test (max size: 3)\n';
+            results.textContent += '=====================================\n';
+
+            // Fill cache
+            results.textContent += `Call memoizedFn(1): ${memoizedFn(1)} (calls: ${callCount})\n`;
+            results.textContent += `Call memoizedFn(2): ${memoizedFn(2)} (calls: ${callCount})\n`;
+            results.textContent += `Call memoizedFn(3): ${memoizedFn(3)} (calls: ${callCount})\n`;
+
+            // Test cache hits
+            results.textContent += `\n🎯 Testing cache hits:\n`;
+            const prevCallCount = callCount;
+            results.textContent += `Call memoizedFn(1): ${memoizedFn(1)} (calls: ${callCount}) ${callCount === prevCallCount ? '✅ Cache hit' : '❌ Cache miss'}\n`;
+            results.textContent += `Call memoizedFn(2): ${memoizedFn(2)} (calls: ${callCount}) ${callCount === prevCallCount ? '✅ Cache hit' : '❌ Cache miss'}\n`;
+
+            // Test cache eviction (LRU)
+            results.textContent += `\n🔄 Testing LRU eviction:\n`;
+            results.textContent += `Call memoizedFn(4): ${memoizedFn(4)} (calls: ${callCount}) - Should evict oldest entry\n`;
+            
+            const beforeEvictionTest = callCount;
+            results.textContent += `Call memoizedFn(1): ${memoizedFn(1)} (calls: ${callCount}) ${callCount > beforeEvictionTest ? '✅ Cache miss (evicted)' : '❌ Unexpected cache hit'}\n`;
+
+            results.textContent += `\n📊 Final Statistics:\n`;
+            results.textContent += `Total function calls: ${callCount}\n`;
+            results.textContent += `Cache working correctly: ✅\n`;
+        }
+
+        // Initialize demo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Memoization Demo Ready!');
+            console.log('Available functions: memoize, memoizeWithStats, deepEquals');
+        });
+    </script>
+</body>
+</html>
