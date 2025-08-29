@@ -1,4 +1,4 @@
-const getRandom = () =>
+const getRandom = (min, max) =>
   Math.random() * (max - min) + min;
 
 // export type FeedItem = {
@@ -7,7 +7,7 @@ const getRandom = () =>
 //   description: string;
 // };
 
-export const getItem = () => {
+export const getItem = (index) => {
   return {
     name: `Random Name - ${index}`,
     description: `

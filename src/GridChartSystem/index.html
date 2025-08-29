@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Trading Grid System</title>
+    <style>
+      body {
+        margin: 0;
+        background: #111;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .grid-container {
+        position: relative;
+        width: 1200px;
+        height: 800px;
+        background: #111;
+        background-size: 100px 50px;
+        background-image:
+          linear-gradient(to right, #222 1px, transparent 1px),
+          linear-gradient(to bottom, #222 1px, transparent 1px);
+        overflow: hidden;
+      }
+
+      .chart-window {
+        position: absolute;
+        background: #222;
+        border: 1px solid #555;
+        border-radius: 6px;
+        overflow: hidden;
+        color: white;
+        min-width: 100px;
+        min-height: 50px;
+      }
+
+      .chart-header {
+        background: #333;
+        padding: 6px;
+        cursor: move;
+        user-select: none;
+      }
+
+      .resize-handle {
+        width: 12px;
+        height: 12px;
+        background: #555;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        cursor: se-resize;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-container" id="grid">
+      <div
+        class="chart-window"
+        style="left: 0; top: 0; width: 400px; height: 300px"
+      >
+        <div class="chart-header">Chart 1</div>
+        <div style="padding: 10px">📈 Chart Content</div>
+        <div class="resize-handle"></div>
+      </div>
+      <div
+        class="chart-window"
+        style="left: 400px; top: 0; width: 400px; height: 300px"
+      >
+        <div class="chart-header">Chart 2</div>
+        <div style="padding: 10px">📊 Chart Content</div>
+        <div class="resize-handle"></div>
+      </div>
+    </div>
+
+    <script>
+      const grid = document.getElementById('grid')
+      const gridSize = { w: 100, h: 50 }
+
+      function snap(value, size) {
+        return Math.round(value / size) * size
+      }
+
+      function getBounds(el) {
+        return {
+          left: el.offsetLeft,
+          top: el.offsetTop,
+          right: el.offsetLeft + el.offsetWidth,
+          bottom: el.offsetTop + el.offsetHeight,
+        }
+      }
+
+      function collides(el, others) {
+        const a = getBounds(el)
+        return Array.from(others).some((bEl) => {
+          if (bEl === el) return false
+          const b = getBounds(bEl)
+          return !(
+            a.right <= b.left ||
+            a.left >= b.right ||
+            a.bottom <= b.top ||
+            a.top >= b.bottom
+          )
+        })
+      }
+
+      function makeDraggable(windowEl) {
+        const header = windowEl.querySelector('.chart-header')
+        const resize = windowEl.querySelector('.resize-handle')
+        let offsetX, offsetY, startX, startY, startWidth, startHeight
+
+        // --- Dragging ---
+        header.addEventListener('mousedown', (e) => {
+          offsetX = e.clientX - windowEl.offsetLeft
+          offsetY = e.clientY - windowEl.offsetTop
+
+          function onMouseMove(e) {
+            let x = snap(e.clientX - offsetX, gridSize.w)
+            let y = snap(e.clientY - offsetY, gridSize.h)
+
+            // Constrain within grid
+            x = Math.max(
+              0,
+              Math.min(x, grid.clientWidth - windowEl.offsetWidth),
+            )
+            y = Math.max(
+              0,
+              Math.min(y, grid.clientHeight - windowEl.offsetHeight),
+            )
+
+            windowEl.style.left = x + 'px'
+            windowEl.style.top = y + 'px'
+
+            // Prevent overlap
+            if (
+              collides(windowEl, document.querySelectorAll('.chart-window'))
+            ) {
+              windowEl.style.left = snap(windowEl.offsetLeft, gridSize.w) + 'px'
+              windowEl.style.top = snap(windowEl.offsetTop, gridSize.h) + 'px'
+            }
+
+            windowEl.style.zIndex = Date.now() // bring to front
+          }
+
+          document.addEventListener('mousemove', onMouseMove)
+          document.addEventListener(
+            'mouseup',
+            () => {
+              document.removeEventListener('mousemove', onMouseMove)
+            },
+            { once: true },
+          )
+        })
+
+        // --- Resizing ---
+        resize.addEventListener('mousedown', (e) => {
+          startX = e.clientX
+          startY = e.clientY
+          startWidth = windowEl.offsetWidth
+          startHeight = windowEl.offsetHeight
+
+          function onMouseMove(e) {
+            let newW = snap(startWidth + (e.clientX - startX), gridSize.w)
+            let newH = snap(startHeight + (e.clientY - startY), gridSize.h)
+
+            // Constrain within parent
+            newW = Math.min(newW, grid.clientWidth - windowEl.offsetLeft)
+            newH = Math.min(newH, grid.clientHeight - windowEl.offsetTop)
+
+            windowEl.style.width = newW + 'px'
+            windowEl.style.height = newH + 'px'
+
+            // Prevent overlap
+            if (
+              collides(windowEl, document.querySelectorAll('.chart-window'))
+            ) {
+              windowEl.style.width = startWidth + 'px'
+              windowEl.style.height = startHeight + 'px'
+            }
+          }
+
+          document.addEventListener('mousemove', onMouseMove)
+          document.addEventListener(
+            'mouseup',
+            () => {
+              document.removeEventListener('mousemove', onMouseMove)
+            },
+            { once: true },
+          )
+        })
+      }
+
+      document.querySelectorAll('.chart-window').forEach(makeDraggable)
+    </script>
+  </body>
+</html>
